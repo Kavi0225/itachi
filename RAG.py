@@ -1,9 +1,9 @@
 import streamlit as st
+# import faiss
 from pypdf import PdfReader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain_community.chat_models import ChatOpenAI
+from langchain_community.embeddings.cohere import CohereEmbeddings
 from langchain.chains.question_answering import load_qa_chain
 from langchain_community.chat_models import ChatCohere
 
@@ -13,7 +13,7 @@ with st.sidebar:
     st.title("Upload your pdf")
     file = st.file_uploader("place your pdf here")
 #
-OPEN_AI_KEY = "jLgQC4J7TVwRewB77c5hKi3mrb0C8HhAcnLowOP5"
+COHERE_API_KEY = "jLgQC4J7TVwRewB77c5hKi3mrb0C8HhAcnLowOP5"
 if file is not None:
     Pdf_reader = PdfReader(file)
     text = ""
@@ -30,7 +30,10 @@ if file is not None:
 
     chunk = text_spliter.split_text(text)
 
-    embeddings = OpenAIEmbeddings(openai_api_key=OPEN_AI_KEY)
+
+    embeddings = CohereEmbeddings(cohere_api_key=COHERE_API_KEY,user_agent="your_app_name")
+
+    embedding = embeddings.embed_documents(chunk)
 
     vector_storage = FAISS.from_texts(chunk, embeddings)
 
@@ -41,7 +44,7 @@ if file is not None:
         # st.write(match)
 
         llm = ChatCohere(
-            openai_api_key=OPEN_AI_KEY,
+            cohere_api_key=COHERE_API_KEY,
             temperature=0,
             max_token=100,
             model_name="cohere"
